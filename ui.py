@@ -1755,7 +1755,7 @@ class RemoteKeyOverlay(QWidget):
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
             buf = BytesIO()
-            img.save(buf, format="PNG")
+            img.save(buf)
             px = QPixmap()
             px.loadFromData(buf.getvalue())
             self._qr_label.setPixmap(
