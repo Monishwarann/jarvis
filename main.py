@@ -23,7 +23,7 @@ if _platform.system() == "Windows":
         def __init__(self, args, **kw):
             kw["creationflags"] = kw.get("creationflags", 0) | _subprocess.CREATE_NO_WINDOW
             kw.pop("startupinfo", None)   # drop any stale/shared STARTUPINFO
-            super().__init__(args, **                       kw)
+            super().__init__(args, **kw)
 
     _subprocess.Popen = _Popen
 
@@ -49,6 +49,7 @@ if not hasattr(asyncio, "TaskGroup"):
                 await asyncio.gather(*self._tasks, return_exceptions=True)
             return False
     asyncio.TaskGroup = _TaskGroupPolyfill
+import os
 import re
 import threading
 import time
@@ -108,8 +109,14 @@ RECEIVE_SAMPLE_RATE = 24000
 CHUNK_SIZE          = 1024
 
 def _get_api_key() -> str:
-    with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+    env_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if env_key:
+        return env_key
+    try:
+        with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
+            return json.load(f).get("gemini_api_key", "")
+    except Exception:
+        return ""
 
 
 def _load_system_prompt() -> str:
